@@ -1,6 +1,11 @@
 let cardFiled;
 let userFiled;
+
 let users;
+let currenUserIndex = 0;
+let currentUser;
+
+let win;
 
 const numberOfUserButtons = document.querySelectorAll(".user-number-button");
 numberOfUserButtons[0].numberOfUser = 2;
@@ -24,6 +29,8 @@ function gameInit() {
   setCards(true);
   setUsers();
 
+  currentUser = users[currenUserIndex];
+
   // プレイヤーをランダムに決める
   // 残りはCPU
   const randomUser = shuffle(users)[0];
@@ -36,6 +43,10 @@ function gameInit() {
   mainUserText.textContent = "あなた";
 
   mainUserStates.before(mainUserText);
+
+  if (!users[0].player) {
+    playCPU();
+  }
 }
 
 function createUsers(e) {
@@ -61,7 +72,15 @@ function createUsers(e) {
 }
 
 let cards = [];
-const cardColors = ["pink", "purple", "red", "blue", "lightgreen", "yellow"];
+const cardColors = [
+  "#FFC7AF",
+  "#FFBEDA",
+  "#DCC2FF",
+  "#BAD3FF",
+  "#EDFFBE",
+  "#DEB887",
+  "#F5DEB3",
+];
 
 function setCards(shuffled) {
   const minCardNumber = 2;
@@ -112,16 +131,9 @@ function createCard(number) {
   cardFiled.append(cardOuter);
 }
 
-let currenUserIndex = 0;
-let currentUser;
-
 let currentCardColor;
 
 function changeUser() {
-  if (currenUserIndex === 0) {
-    currentUser = users[currenUserIndex];
-  }
-
   currenUserIndex++;
   currentUser = users[currenUserIndex];
 
@@ -187,6 +199,10 @@ function createUserStates(user) {
 // プレイヤー以外の場合、自動操作
 
 function next() {
+  if (checkUserWin()) {
+    return;
+  }
+
   changeUser();
   isFliping = false;
 
@@ -218,10 +234,6 @@ function cardFlip(e) {
     } else {
       cardFlipByCpu(card, cardInner, cardNumber);
     }
-
-    if (checkUserWin()) {
-      return;
-    }
   }, 700);
 }
 
@@ -245,14 +257,18 @@ function cardFlipByPlayer(cardInner, cardNumber, card) {
 }
 
 function cardFlipByCpu(card, cardInner, cardNumber) {
-  const limitUpperNumber = getGreatestNumber(currentUser) + 8;
+  if (currentUser.numbers.length === 9) {
+    cardCheckSucsess(card, cardNumber);
+    return;
+  }
+
+  const limitUpperNumber = getGreatestNumber(currentUser) + 10;
 
   if (cardNumber < limitUpperNumber) {
     cardCheckSucsess(card, cardNumber);
     next();
   } else {
     cardInner.classList.remove("selecting");
-    setUserCardHistory(card);
     setTimeout(next, 800);
   }
 }
@@ -283,6 +299,7 @@ function setUserNumberCard(cardNumber) {
 
 // CPUにプレイさせる
 function playCPU() {
+  if (win) return;
   const deley = 1200;
 
   setTimeout(() => {
@@ -293,8 +310,10 @@ function playCPU() {
 }
 
 function checkUserWin() {
-  if (currentUser.numbers.length === 10) {
+  if (currentUser.numbers.length === 7) {
+    win = true;
     alert(`${currentUser.name}の勝利`);
+    location.reload();
   }
 }
 
