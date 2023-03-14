@@ -3,8 +3,6 @@ const cardFiled = document.querySelector(".card-filed");
 let cards = [];
 const cardColors = ["pink", "purple", "red", "blue", "lightgreen", "yellow"];
 
-function gameInit() {}
-
 function setCards(shuffled) {
   const minCardNumber = 2;
   const maxCardNumber = 49;
@@ -75,7 +73,14 @@ const c = {
   player: false,
 };
 
-const users = [a, b, c];
+const d = {
+  name: "D",
+  id: 3,
+  numbers: [1],
+  player: false,
+};
+
+const users = [a, b, c, d];
 let currenUserIndex = 0;
 let currentUser = users[currenUserIndex];
 
@@ -148,6 +153,16 @@ function createUserStates(user) {
 setCards(true);
 setUsers();
 
+// ユーザーの変更
+// プレイヤー以外の場合、自動操作
+
+function next() {
+  changeUser();
+  isFliping = false;
+
+  if (!currentUser.player) playCPU();
+}
+
 let isFliping = false;
 function cardFlip(e) {
   if (isFliping) return;
@@ -161,15 +176,6 @@ function cardFlip(e) {
   const card = e.target.parentElement.parentElement;
   const cardNumber = card.number;
 
-  // ユーザーの変更
-  // プレイヤー以外の場合、自動操作
-  const next = () => {
-    changeUser();
-    isFliping = false;
-
-    if (!currentUser.player) playCPU();
-  };
-
   setTimeout(() => {
     if (!checkCardNumber(cardNumber)) {
       cardInner.classList.remove("selecting");
@@ -180,30 +186,44 @@ function cardFlip(e) {
     if (isPlayer) {
       cardFlipByPlayer(cardInner, cardNumber, card);
     } else {
-      currentCardColor = card.color;
-      card.remove();
-      currentUser.numbers.push(cardNumber);
-      setUserNumberCard(cardNumber);
+      cardFlipByCpu(card, cardInner, cardNumber);
     }
 
     if (checkUserWin()) {
       return;
     }
-
-    next();
   }, 700);
+}
+
+function cardCheckSucsess(card, cardNumber) {
+  currentCardColor = card.color;
+  card.remove();
+  currentUser.numbers.push(cardNumber);
+  setUserNumberCard(cardNumber);
 }
 
 function cardFlipByPlayer(cardInner, cardNumber, card) {
   const askSelect = confirm("このカードにしますか?");
 
   if (askSelect) {
-    currentCardColor = card.color;
-    card.remove();
-    currentUser.numbers.push(cardNumber);
-    setUserNumberCard(cardNumber);
+    cardCheckSucsess(card, cardNumber);
+    next();
   } else {
     cardInner.classList.remove("selecting");
+    setTimeout(next, 800);
+  }
+}
+
+function cardFlipByCpu(card, cardInner, cardNumber) {
+  const limitUpperNumber = getGreatestNumber(currentUser) + 8;
+
+  if (cardNumber < limitUpperNumber) {
+    cardCheckSucsess(card, cardNumber);
+    next();
+  } else {
+    cardInner.classList.remove("selecting");
+    setUserCardHistory(card);
+    setTimeout(next, 800);
   }
 }
 
