@@ -1,4 +1,64 @@
-const cardFiled = document.querySelector(".card-filed");
+let cardFiled;
+let userFiled;
+let users;
+
+const numberOfUserButtons = document.querySelectorAll(".user-number-button");
+numberOfUserButtons[0].numberOfUser = 2;
+numberOfUserButtons[1].numberOfUser = 3;
+numberOfUserButtons[2].numberOfUser = 4;
+
+numberOfUserButtons.forEach((button) => {
+  button.addEventListener("click", (e) => {
+    createUsers(e);
+    gameInit();
+  });
+});
+
+function gameInit() {
+  document.querySelector(".select-user-number-filed").remove();
+
+  cardFiled = document.querySelector(".card-filed");
+  userFiled = document.querySelector(".user-filed");
+
+  // 引数にtrueを渡した場合、カードをシャッフル
+  setCards(true);
+  setUsers();
+
+  // プレイヤーをランダムに決める
+  // 残りはCPU
+  const randomUser = shuffle(users)[0];
+  randomUser.player = true;
+
+  const mainUserStates =
+    document.querySelectorAll(".user-states")[randomUser.id];
+
+  const mainUserText = document.createElement("div");
+  mainUserText.textContent = "あなた";
+
+  mainUserStates.before(mainUserText);
+}
+
+function createUsers(e) {
+  const numberOfUser = e.target.numberOfUser;
+  let names = ["A", "B"];
+
+  if (numberOfUser === 3) names.push("C");
+  if (numberOfUser === 4) {
+    names.push("C");
+    names.push("D");
+  }
+
+  users = names.map((name, index) => {
+    const user = {};
+
+    user.name = name;
+    user.id = index;
+    user.numbers = [1];
+    user.player = false;
+
+    return user;
+  });
+}
 
 let cards = [];
 const cardColors = ["pink", "purple", "red", "blue", "lightgreen", "yellow"];
@@ -52,41 +112,16 @@ function createCard(number) {
   cardFiled.append(cardOuter);
 }
 
-const a = {
-  name: "A",
-  id: 0,
-  numbers: [1],
-  player: true,
-};
-
-const b = {
-  name: "B",
-  id: 1,
-  numbers: [1],
-  player: false,
-};
-
-const c = {
-  name: "C",
-  id: 2,
-  numbers: [1],
-  player: false,
-};
-
-const d = {
-  name: "D",
-  id: 3,
-  numbers: [1],
-  player: false,
-};
-
-const users = [a, b, c, d];
 let currenUserIndex = 0;
-let currentUser = users[currenUserIndex];
+let currentUser;
 
 let currentCardColor;
 
 function changeUser() {
+  if (currenUserIndex === 0) {
+    currentUser = users[currenUserIndex];
+  }
+
   currenUserIndex++;
   currentUser = users[currenUserIndex];
 
@@ -110,7 +145,6 @@ function setCurretnUserIcon() {
   });
 }
 
-const userFiled = document.querySelector(".user-filed");
 function setUsers() {
   users.map((user) => createUserStates(user));
 }
@@ -148,10 +182,6 @@ function createUserStates(user) {
   userStates.append(cardContainer);
   userFiled.append(userStates);
 }
-
-// 引数にtrueを渡した場合、カードをシャッフル
-setCards(true);
-setUsers();
 
 // ユーザーの変更
 // プレイヤー以外の場合、自動操作
